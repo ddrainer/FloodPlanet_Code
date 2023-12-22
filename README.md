@@ -1,5 +1,5 @@
 # FloodPlanet Code
-Acknowledgement: This deep learning pipeline was initially constructed by Matt Purri, modified and maintained by Zhijie (JJ) Zhang.
+Acknowledgement: This deep learning pipeline was initially constructed by Matt Purri, modified and maintained by Zhijie (JJ) Zhang. This work was funded by NASA Commercial Smallsat Data Acquisition (CSDA) Program, award number: 80NSSC21K1163. PI: Beth Tellman. This is a product of Social [Pixel] Lab.
 
 # Install
 ## Install geospatial packages, CUDA, Pytorch and Pytorch-lightning
