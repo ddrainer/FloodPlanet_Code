@@ -1,0 +1,5 @@
+name: combined
+channels: ALL # [RGB, RGB_NIR, ALL]
+sensor: S1 # [S2, S1]
+
+dataset_kwargs:
