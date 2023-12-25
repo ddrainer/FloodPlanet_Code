@@ -513,15 +513,6 @@ class BaseDataset(Dataset):
             if coin < self.transforms.rotate.likelihood:
                 rot_angle = np.random.uniform(self.transforms.rotate.min_rot_angle, self.transforms.rotate.max_rot_angle, size=1)[0]
                 active_transforms.append({'transform': F.rotate, 'anno': True, 'kwargs': {'angle': rot_angle}})
-        
-        # Random crop.
-        # TODO: needs some additional arguments such as height width
-        # if self.transforms.random_crop.active:
-        #     coin = np.random.rand()
-        #     if coin > self.transforms.random_crop.liklihood:
-        #         active_transforms.append({'transform': F.crop, 'anno': True, 'kwargs': {'size': self.transforms.random_crop.size}})
-
-
         return active_transforms
 
     def apply_transforms(self, image, active_transforms, is_anno):

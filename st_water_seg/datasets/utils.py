@@ -45,7 +45,6 @@ class CropParams:
         self.og_height = og_height
         self.og_width = og_width
 
-        # TODO: Fix this hack.
         self.max_crop_height = max_crop_height
         self.max_crop_width = max_crop_width
 

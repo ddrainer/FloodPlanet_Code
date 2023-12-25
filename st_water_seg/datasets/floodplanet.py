@@ -16,7 +16,7 @@ from st_water_seg.datasets.base_dataset import BaseDataset
 from st_water_seg.datasets.utils import CropParams, get_crop_slices
 
 
-class Combined_Dataset(BaseDataset):
+class Floodplanet_Dataset(BaseDataset):
 
     def __init__(self,
                  root_dir,
@@ -26,7 +26,7 @@ class Combined_Dataset(BaseDataset):
                  transforms=None,
                  sensor='PS',
                  channels=None,
-                 dset_name="combined",
+                 dset_name="floodplanet",
                  seed_num=0,
                  output_metadata=False,
                  norm_mode=None,
@@ -46,7 +46,7 @@ class Combined_Dataset(BaseDataset):
         self.preflood = preflood
         self.pre_post_difference = pre_post_difference
 
-        super(Combined_Dataset, self).__init__(dset_name,
+        super(Floodplanet_Dataset, self).__init__(dset_name,
                                                root_dir,
                                                split,
                                                slice_params,
@@ -69,22 +69,12 @@ class Combined_Dataset(BaseDataset):
         self.n_channels = self._get_n_channels()
 
     def _prepare_data(self, sensor_name):
-        # thp_region_dirs = sorted(
-        #     glob(os.path.join(self.root_dir, 'THP') + "/*/"))
-        # thp_region_names = [p.split('/')[-2] for p in thp_region_dirs]
         print("------------")
         print(self.root_dir)
         print("------------")
         csdap_region_dirs = sorted(
             glob(os.path.join(self.root_dir, 'CSDAP_complete') + "/*/"))
         csdap_region_names = [p.split('/')[-2] for p in csdap_region_dirs]
-
-        # csdap_region_dirs = sorted(
-        #     glob(os.path.join(self.root_dir, 'devided_70') + "/*/"))
-        # csdap_region_names = [p.split('/')[-2] for p in csdap_region_dirs]
-
-        # region_names = thp_region_names + csdap_region_names
-        # region_dirs = thp_region_dirs + csdap_region_dirs
         region_names = csdap_region_names
         region_dirs = csdap_region_dirs
 
@@ -100,10 +90,6 @@ class Combined_Dataset(BaseDataset):
             image_name = os.path.splitext(os.path.split(image_path)[1])[0]
 
             # # Get label path.
-            # label_path = os.path.join('/'.join(image_path.split('/')[:-3]),
-            #                           'labels', image_name + '.tif')
-            
-            # Get label path for Blacksky
             label_path = os.path.join('/'.join(image_path.split('/')[:-3]),
                                       'labels', image_name + '.tif')
                                       
@@ -197,9 +183,6 @@ class Combined_Dataset(BaseDataset):
                     if eval_region not in region_names:
                         print(f'Eval region {eval_region} not found in avilable regions {region_names}')
                         pass
-                        # raise ValueError(
-                        #     f'Eval region {eval_region} not found in avilable regions {region_names}'
-                        # )
 
                 # Get region directories of eval regions.
                 sub_region_dirs = {}
@@ -331,14 +314,12 @@ class Combined_Dataset(BaseDataset):
             raise NotImplementedError(
                 f'No method for loading image with backend "{backend}"')
 
-        # TODO: hacky, should fix on dataset side
         c, h, w = image.shape
         if (c > h) or (c > w):
             # Image actually as dimensions: [height, width, channels]
             # Expect images to be: [channels, height, width]
             image = rearrange(image, 'h w c -> c h w')
 
-        # TODO: Hotfix
         c = image.shape[0]
         if c > 2:
             image = image[:2]
@@ -453,7 +434,6 @@ class Combined_Dataset(BaseDataset):
             raise NotImplementedError(
                 f'No method for loading image with backend "{backend}"')
 
-        # TODO: Hack to handle inconsistent number of channels in PS images.
         if image.shape[0] > 4:
             image = image[:4]
 
@@ -539,7 +519,6 @@ class Combined_Dataset(BaseDataset):
         if crop_params is not None:
             image = self._crop_image(image, crop_params)
 
-        # TODO: Already normalized to [0,1].
         image = np.clip(image, 0, 18607.72) / 18607.72
 
         return image
@@ -605,19 +584,10 @@ class Combined_Dataset(BaseDataset):
         # Value mapping:
         # 0: No data (ignore)
         # 1: No flood
-        # 2: Low confidence flood
-        # 3: High confidence flood
-
-        # Get positive water label.
-        # if merge high+low, then 2 and 3 are both positive.
-        # if consider low as no, then only 3 is positive.
-        
-        x, y = np.where((label == 2) | (label == 3))
+        # 2: Flood      
+        x, y = np.where((label == 2))
         binary_label[x, y] = 1
-        
-        # x, y = np.where(label == 3)
-        # binary_label[x, y] = 1
-
+    
         # Get ignore label.
         x, y = np.where((label == 0))
         binary_label[x, y] = self.ignore_index
@@ -683,7 +653,7 @@ class Combined_Dataset(BaseDataset):
 
 def test_image_transforms(root_dir, slice_params, args):
     from omegaconf import OmegaConf
-    no_t_dataset = Combined_Dataset(root_dir,
+    no_t_dataset = Floodplanet_Dataset(root_dir,
                                args.split,
                                slice_params,
                                sensor=args.sensor,
@@ -699,7 +669,7 @@ def test_image_transforms(root_dir, slice_params, args):
                                         'min_rot_angle': 0, 
                                         'max_rot_angle': 360}})
 
-    t_dataset = Combined_Dataset(root_dir,
+    t_dataset = Floodplanet_Dataset(root_dir,
                                args.split,
                                slice_params,
                                sensor=args.sensor,
@@ -748,62 +718,3 @@ def test_image_transforms(root_dir, slice_params, args):
     create_gif([rgb_image, rgb_overlay],
                 f"./{dset_name}_test_trans_{t_dataset.sensor}_{index}_T.gif")
 
-if __name__ == "__main__":
-    import argparse
-    from copy import deepcopy
-
-    from tqdm import tqdm
-
-    from st_water_seg.tools import create_gif
-    from utils import get_dset_path, generate_image_slice_object
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--ex_indices', type=int, default=[0], nargs='+')
-    parser.add_argument('--split', type=str, default='valid')
-    parser.add_argument('--crop_size', type=int, default=1024)
-    parser.add_argument('--sensor', type=str, default='S2')
-    parser.add_argument('--eval_region',
-                        type=str,
-                        default=None,
-                        help='Bolivia')
-    parser.add_argument('--channels', type=str, default='ALL')
-    args = parser.parse_args()
-
-    dset_name = "combined"
-    root_dir = get_dset_path(dset_name)
-    slice_params = generate_image_slice_object(args.crop_size,
-                                               args.crop_size,
-                                               scale=1,
-                                               stride=None)
-    # # Load dataset object.
-    # dataset = Combined_Dataset(root_dir,
-    #                            args.split,
-    #                            slice_params,
-    #                            sensor=args.sensor,
-    #                            channels=args.channels,
-    #                            eval_region=args.eval_region,
-    #                            dem=False,
-    #                            slope=False)
-    # # Get an example.
-    # for index in tqdm(args.ex_indices):
-    #     example = dataset.__getitem__(index)
-
-    #     # Create an RGB version of image.
-    #     rgb_image = dataset.to_RGB(example["image"])
-    #     mask = example["target"]
-
-    #     # Visualize RGB image w/ and w/o overlay (gif).
-    #     rgb_overlay = deepcopy(rgb_image)
-    #     x, y = np.where(mask == 1)
-    #     rgb_overlay[x, y, :] = np.asarray([0, 1, 1])
-    #     x, y = np.where(mask == 2)
-    #     rgb_overlay[x, y, :] = np.asarray([1, 0, 0])
-
-    #     rgb_image = (rgb_image * 255).astype("uint8")
-    #     rgb_overlay = (rgb_overlay * 255).astype("uint8")
-
-    #     create_gif([rgb_image, rgb_overlay],
-    #                f"./{dset_name}_{dataset.sensor}_{index}.gif")
-
-    # TEST: Check image transforms.
-    test_image_transforms(root_dir, slice_params, args)

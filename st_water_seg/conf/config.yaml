@@ -1,5 +1,5 @@
 defaults:
-  - dataset: combined
+  - dataset: floodplanet
   - model: ef_model
   - override hydra/sweeper: basic
   - _self_

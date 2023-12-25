@@ -3,19 +3,12 @@ from collections import defaultdict
 import torch
 import numpy as np
 
-from st_water_seg.datasets.thp import THP_Dataset
-from st_water_seg.datasets.s1f11 import S1F11
-from st_water_seg.datasets.csdap import CSDAP_Dataset
 from st_water_seg.datasets.utils import get_dset_path
-from st_water_seg.datasets.combined import Combined_Dataset
-from st_water_seg.datasets.thp_timeseries import THP_TimeSeries_Dataset
+from st_water_seg.datasets.floodplanet import Floodplanet_Dataset
+
 
 DATASETS = {
-    'csdap': CSDAP_Dataset,
-    'thp': THP_Dataset,
-    'combined': Combined_Dataset,
-    's1f11': S1F11,
-    'thp_timeseries': THP_TimeSeries_Dataset,
+    'floodplanet': Floodplanet_Dataset,
 }
 
 
