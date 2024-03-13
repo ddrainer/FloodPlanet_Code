@@ -6,7 +6,6 @@ import numpy as np
 from st_water_seg.datasets.utils import get_dset_path
 from st_water_seg.datasets.floodplanet import Floodplanet_Dataset
 
-
 DATASETS = {
     'floodplanet': Floodplanet_Dataset,
 }
@@ -21,13 +20,13 @@ def tensors_and_lists_collate_fn(data):
             if isinstance(v, np.ndarray):
                 v = torch.tensor(v)
             out_data[k].append(v)
-        
+
     for k, v in out_data.items():
         if k in list_key_names:
             out_data[k] = v
         else:
             out_data[k] = torch.stack(v, dim=0)
-    
+
     return out_data
 
 

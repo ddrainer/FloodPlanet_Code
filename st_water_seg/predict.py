@@ -28,11 +28,10 @@ def main():
     parser.add_argument('--eval_region',
                         type=str,
                         help='TODO hotfix for cross-val config save issue.')
-    parser.add_argument(
-        '--eval_dataset_split',
-        type=str,
-        default='test',
-        help='The dataset split to evaluate on. Default: None')
+    parser.add_argument('--eval_dataset_split',
+                        type=str,
+                        default='test',
+                        help='The dataset split to evaluate on. Default: None')
     parser.add_argument(
         '--n_workers',
         type=int,
@@ -148,18 +147,19 @@ def predict(cfg,
     if hasattr(cfg, 'seed_num') is False:
         cfg.seed_num = None
 
-    eval_dataset = build_dataset(eval_dataset_name,
-                                 eval_dataset_split,
-                                 slice_params,
-                                 sensor=cfg.dataset.sensor,
-                                 channels=cfg.dataset.channels,
-                                 norm_mode=cfg.norm_mode,
-                                 eval_region=cfg.eval_region,
-                                 ignore_index=cfg.ignore_index,
-                                 seed_num=cfg.seed_num,
-                                #  train_split_pct=cfg.train_split_pct,
-                                 train_split_pct=0.8,
-                                 **cfg.dataset.dataset_kwargs)
+    eval_dataset = build_dataset(
+        eval_dataset_name,
+        eval_dataset_split,
+        slice_params,
+        sensor=cfg.dataset.sensor,
+        channels=cfg.dataset.channels,
+        norm_mode=cfg.norm_mode,
+        eval_region=cfg.eval_region,
+        ignore_index=cfg.ignore_index,
+        seed_num=cfg.seed_num,
+        #  train_split_pct=cfg.train_split_pct,
+        train_split_pct=0.8,
+        **cfg.dataset.dataset_kwargs)
 
     model = build_model(cfg.model.name,
                         eval_dataset.n_channels,
@@ -248,14 +248,14 @@ def predict(cfg,
             except KeyError:
                 f1_score_metric = metrics['test_MulticlassF1Score'].item()
                 jaccard_metric = metrics['test_MulticlassJaccardIndex'].item()
-            image_stats_f1[example['metadata']['image_path']].append(f1_score_metric)
-            image_stats_iou[example['metadata']['image_path']].append(jaccard_metric)
-                
+            image_stats_f1[example['metadata']['image_path']].append(
+                f1_score_metric)
+            image_stats_iou[example['metadata']['image_path']].append(
+                jaccard_metric)
+
             try:
-                region_stats_f1[region_name].append(
-                    f1_score_metric)
-                region_stats_iou[region_name].append(
-                    jaccard_metric)
+                region_stats_f1[region_name].append(f1_score_metric)
+                region_stats_iou[region_name].append(jaccard_metric)
             except KeyError:
                 # No region name information.
                 pass
@@ -332,7 +332,10 @@ def predict(cfg,
                                                      crop_params.og_width)
                 class_pred_canvases[region_name].add_image(
                     # water_pred, image_name, crop_params, crop_params.og_height,
-                    pred, image_name, crop_params, crop_params.og_height,
+                    pred,
+                    image_name,
+                    crop_params,
+                    crop_params.og_height,
                     crop_params.og_width)
                 rgb_canvases[region_name].add_image(rgb_image, image_name,
                                                     crop_params,
@@ -354,10 +357,12 @@ def predict(cfg,
                     region_name].get_combined_images()
                 save_paths, _, _ = class_pred_canvases[
                     region_name].save_images(save_class=True)
-                save_paths, _, _ = pred_canvases[
-                    region_name].save_images(save_class=False)
-                _, _, _ = gt_canvases[region_name].save_images(save_class=False)
-                _, _, _ = rgb_canvases[region_name].save_images(save_class=False)
+                save_paths, _, _ = pred_canvases[region_name].save_images(
+                    save_class=False)
+                _, _, _ = gt_canvases[region_name].save_images(
+                    save_class=False)
+                _, _, _ = rgb_canvases[region_name].save_images(
+                    save_class=False)
 
                 for (img_name,
                      pred_img), save_path in zip(pred_img_canvases.items(),

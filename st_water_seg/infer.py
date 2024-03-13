@@ -56,10 +56,13 @@ def main():
         cfg.train_split_pct = 0.0
 
     # Create save directory.
-    base_save_dir = os.path.join('/media/mule/Projects/SocialPixelLab/RGV_inference/2018_extra/'+ args.region_name, args.timestamp)
+    base_save_dir = os.path.join(
+        '/media/mule/Projects/SocialPixelLab/RGV_inference/2018_extra/' +
+        args.region_name, args.timestamp)
 
     # Load dataset.
-    slice_params = generate_image_slice_object(cfg.crop_height, cfg.crop_width, min(cfg.crop_height, cfg.crop_width))
+    slice_params = generate_image_slice_object(
+        cfg.crop_height, cfg.crop_width, min(cfg.crop_height, cfg.crop_width))
     eval_dataset = build_dataset(args.dataset_name,
                                  args.split,
                                  slice_params,
@@ -76,7 +79,8 @@ def main():
     eval_loader = DataLoader(eval_dataset,
                              batch_size=cfg.batch_size,
                              shuffle=False,
-                             num_workers=cfg.n_workers, collate_fn=tensors_and_lists_collate_fn)
+                             num_workers=cfg.n_workers,
+                             collate_fn=tensors_and_lists_collate_fn)
 
     # Load model.
     model = build_model(cfg.model.name,
@@ -106,7 +110,9 @@ def main():
     # rgb_canvases, pred_canvases = {}, {}
     pred_canvases = {}
     with torch.no_grad():
-        for batch in tqdm(eval_loader, colour='green', desc='Generating predictions'):
+        for batch in tqdm(eval_loader,
+                          colour='green',
+                          desc='Generating predictions'):
             # Move batch to device.
             for key, value in batch.items():
                 if isinstance(value, torch.Tensor):
@@ -120,8 +126,10 @@ def main():
 
             preds = rearrange(preds, 'b c h w -> b h w c')
             input_images = rearrange(input_images, 'b c h w -> b h w c')
-            batch_mean = rearrange(batch['mean'], 'b c 1 1 -> b 1 1 c').detach().cpu().numpy()
-            batch_std = rearrange(batch['std'], 'b c 1 1 -> b 1 1 c').detach().cpu().numpy()
+            batch_mean = rearrange(
+                batch['mean'], 'b c 1 1 -> b 1 1 c').detach().cpu().numpy()
+            batch_std = rearrange(batch['std'],
+                                  'b c 1 1 -> b 1 1 c').detach().cpu().numpy()
 
             for b in range(output.shape[0]):
                 pred = preds[b]
@@ -134,17 +142,25 @@ def main():
                 if region_name not in pred_canvases.keys():
                     # Get base save directories.
                     # rgb_save_dir = os.path.join(base_save_dir, region_name + '_rgb')
-                    pred_save_dir = os.path.join(base_save_dir, region_name + '_pred')
+                    pred_save_dir = os.path.join(base_save_dir,
+                                                 region_name + '_pred')
 
                     # Initialize image stitchers.
                     # rgb_canvases[region_name] = ImageStitcher(rgb_save_dir, save_backend='PIL', save_ext='.png')
-                    pred_canvases[region_name] = ImageStitcher(pred_save_dir, save_backend='tifffile', save_ext='.tif')
-                
+                    pred_canvases[region_name] = ImageStitcher(
+                        pred_save_dir,
+                        save_backend='tifffile',
+                        save_ext='.tif')
+
                 # Add input image and prediction to stitchers.
                 unnorm_img = (input_image * batch_std[b]) + batch_mean[b]
-                image_name = os.path.splitext(os.path.split(metadata['image_path'])[1])[0]
+                image_name = os.path.splitext(
+                    os.path.split(metadata['image_path'])[1])[0]
                 # rgb_canvases[region_name].add_image(unnorm_img, image_name, metadata['crop_params'], metadata['crop_params'].og_height, metadata['crop_params'].og_width)
-                pred_canvases[region_name].add_image(pred, image_name, metadata['crop_params'], metadata['crop_params'].og_height, metadata['crop_params'].og_width)
+                pred_canvases[region_name].add_image(
+                    pred, image_name, metadata['crop_params'],
+                    metadata['crop_params'].og_height,
+                    metadata['crop_params'].og_width)
 
     # Convert stitched images to proper format.
     # for region_name in rgb_canvases.keys():
@@ -163,9 +179,9 @@ def main():
         for image_name, image in pred_canvas.items():
             # Figure out the predicted class.
             pred = np.clip(image.argmax(axis=2), 0, 1)
-            save_path = os.path.join(pred_canvases[region_name].save_dir, image_name + '.tif')
-            Image.fromarray((pred*255).astype('uint8')).save(save_path)
-        
+            save_path = os.path.join(pred_canvases[region_name].save_dir,
+                                     image_name + '.tif')
+            Image.fromarray((pred * 255).astype('uint8')).save(save_path)
 
 
 if __name__ == '__main__':

@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Root folder containing the directories
-ROOT_FOLDER="/media/mule/Projects/SocialPixelLab/RGV/Event1_DamBreak_2021-2/"
+# Set root folder to current direcotry
+ROOT_FOLDER=$(pwd)
+#ROOT_FOLDER="/media/mule/Projects/SocialPixelLab/RGV/Event1_DamBreak_2021-2/"
 
 # JSON file path
-JSON_FILE="/home/zhijiezhang/spatial_temporal_water_seg/dataset_dirs.json"
+JSON_FILE="/dataset_dirs.json"
 
 # Loop through each sub-directory in the root folder
 for dir in "$ROOT_FOLDER"/*; do

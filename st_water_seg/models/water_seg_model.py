@@ -45,7 +45,10 @@ class WaterSegmentationModel(pl.LightningModule):
 
     def _get_tracked_metrics(self, average_mode='micro'):
         metrics = torchmetrics.MetricCollection([
-            torchmetrics.F1Score(task="multiclass",num_classes=self.n_classes,ignore_index=self.ignore_index,average='micro'),
+            torchmetrics.F1Score(task="multiclass",
+                                 num_classes=self.n_classes,
+                                 ignore_index=self.ignore_index,
+                                 average='micro'),
             torchmetrics.JaccardIndex(task="multiclass",
                                       num_classes=self.n_classes,
                                       ignore_index=self.ignore_index,
@@ -110,7 +113,7 @@ class WaterSegmentationModel(pl.LightningModule):
                       on_epoch=True)
 
         if False:
-        # if (batch_idx % self.log_image_iter) == 0:
+            # if (batch_idx % self.log_image_iter) == 0:
             # Unnormalize images
             images = (images * batch['std']) + batch['mean']
             for b in range(images.shape[0]):
@@ -155,7 +158,7 @@ class WaterSegmentationModel(pl.LightningModule):
                       on_epoch=True)
 
         if False:
-        # if (batch_idx % self.log_image_iter) == 0:
+            # if (batch_idx % self.log_image_iter) == 0:
             # Unnormalize images
             images = (images * batch['std']) + batch['mean']
             for b in range(images.shape[0]):

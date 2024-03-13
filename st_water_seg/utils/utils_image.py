@@ -8,10 +8,12 @@ from tifffile import tifffile
 # import gdal
 
 
-def resize_image(image,
-                 desired_height,
-                 desired_width,
-                 resize_mode=cv2.INTER_LANCZOS4):#cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_NEAREST, cv2.INTER_AREA
+def resize_image(
+    image,
+    desired_height,
+    desired_width,
+    resize_mode=cv2.INTER_LANCZOS4
+):  #cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_NEAREST, cv2.INTER_AREA
     """Resize the resolution of input image from original to that of labels.
 
     Args:
@@ -477,7 +479,7 @@ class ImageStitcher_v2:
                     self.image_canvas[
                         image_name] = self.image_canvas[image_name] / (
                             self.weight_canvas[image_name][:, :, None] + 1e-5)
-                    
+
                 else:
                     raise NotImplementedError(
                         f'Cannot save image in ImageStitcher with {len(self.image_canvas[image_name])} dimensions.'
@@ -486,7 +488,7 @@ class ImageStitcher_v2:
                 ## Make sure there are no NaN values kept during normalization stage.
                 self.image_canvas[image_name] = np.nan_to_num(
                     self.image_canvas[image_name])
-                
+
                 # self.image_canvas[image_name][self.image_canvas[image_name]<0.5]=0
                 # self.image_canvas[image_name][self.image_canvas[image_name]>=0.5]=1
             self._images_combined = True
@@ -506,7 +508,8 @@ class ImageStitcher_v2:
 
             ## Call save image method.
             # breakpoint()
-            self._save_image(self.image_canvas[image_name], save_path, save_class)
+            self._save_image(self.image_canvas[image_name], save_path,
+                             save_class)
 
             ## Record image sizes, save path, and image name.
             image_sizes.append(self.image_canvas[image_name].shape)
@@ -516,15 +519,15 @@ class ImageStitcher_v2:
         return save_paths, image_names, image_sizes
 
     # def _save_image(self, image, save_path):
-    def _save_image(self, image, save_path,save_class=False):
+    def _save_image(self, image, save_path, save_class=False):
         if save_class:
-            image[image>=0.5]=1
-            image[image<0.5]=0
+            image[image >= 0.5] = 1
+            image[image < 0.5] = 0
 
         if self.save_backend == 'tifffile':
             # breakpoint()
             # pass
-            image = image.astype(np.float16) 
+            image = image.astype(np.float16)
             # breakpoint()
             # pass
             tifffile.imwrite(save_path, image)
@@ -566,4 +569,3 @@ class ImageStitcher_v2:
     def get_combined_images(self):
         self._combine_images()
         return self.image_canvas
-

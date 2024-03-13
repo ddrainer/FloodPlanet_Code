@@ -1,7 +1,6 @@
 import os
 import pickle
 
-
 import cv2
 import torch
 import numpy as np
@@ -255,8 +254,8 @@ class BaseDataset(Dataset):
             norm_params[self.seed_num][self.split]['slope']['std'] = slope_std
 
         # Save updated normalization parameters.
-        if (image_norms is False) or (dem_norms is False) or (slope_norms is
-                                                              False):
+        if (image_norms is False) or (dem_norms is False) or (slope_norms
+                                                              is False):
             pickle.dump(norm_params, open(save_path, 'wb'))
 
         return norm_params
@@ -478,15 +477,15 @@ class BaseDataset(Dataset):
                 rgb_image = self._to_RGB_L8(image)
             else:
                 raise NotImplementedError
-        else:  
+        else:
             if self.sensor == 'S2':
-                rgb_image = self._to_RGB_S2(image,gamma=gamma)
+                rgb_image = self._to_RGB_S2(image, gamma=gamma)
             elif self.sensor == 'S1':
-                rgb_image = self._to_RGB_S1(image,gamma=gamma)
+                rgb_image = self._to_RGB_S1(image, gamma=gamma)
             elif self.sensor == 'PS':
-                rgb_image = self._to_RGB_PS(image,gamma=gamma)
+                rgb_image = self._to_RGB_PS(image, gamma=gamma)
             elif self.sensor == 'L8':
-                rgb_image = self._to_RGB_L8(image,gamma=gamma)
+                rgb_image = self._to_RGB_L8(image, gamma=gamma)
             else:
                 raise NotImplementedError
 
@@ -499,20 +498,37 @@ class BaseDataset(Dataset):
         if self.transforms.hflip.active:
             coin = np.random.rand()
             if coin < self.transforms.hflip.likelihood:
-                active_transforms.append({'transform': F.hflip, 'anno': True, 'kwargs': {}})
+                active_transforms.append({
+                    'transform': F.hflip,
+                    'anno': True,
+                    'kwargs': {}
+                })
 
         # Vertical flip.
         if self.transforms.vflip.active:
             coin = np.random.rand()
             if coin < self.transforms.vflip.likelihood:
-                active_transforms.append({'transform': F.vflip, 'anno': True, 'kwargs': {}})
+                active_transforms.append({
+                    'transform': F.vflip,
+                    'anno': True,
+                    'kwargs': {}
+                })
 
         # Rotate image.
         if self.transforms.rotate.active:
             coin = np.random.rand()
             if coin < self.transforms.rotate.likelihood:
-                rot_angle = np.random.uniform(self.transforms.rotate.min_rot_angle, self.transforms.rotate.max_rot_angle, size=1)[0]
-                active_transforms.append({'transform': F.rotate, 'anno': True, 'kwargs': {'angle': rot_angle}})
+                rot_angle = np.random.uniform(
+                    self.transforms.rotate.min_rot_angle,
+                    self.transforms.rotate.max_rot_angle,
+                    size=1)[0]
+                active_transforms.append({
+                    'transform': F.rotate,
+                    'anno': True,
+                    'kwargs': {
+                        'angle': rot_angle
+                    }
+                })
         return active_transforms
 
     def apply_transforms(self, image, active_transforms, is_anno):
@@ -527,10 +543,12 @@ class BaseDataset(Dataset):
                 # Check if transform is applied to annotations.
                 if transform['anno'] == is_anno:
                     try:
-                        image = transform['transform'](image, **transform['kwargs'])
+                        image = transform['transform'](image,
+                                                       **transform['kwargs'])
                     except RuntimeError:
                         # Add a channel dimension to the tensor.
-                        image = transform['transform'](image[None], **transform['kwargs'])[0]
+                        image = transform['transform'](
+                            image[None], **transform['kwargs'])[0]
                 else:
                     pass
 

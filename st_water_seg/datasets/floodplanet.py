@@ -46,18 +46,19 @@ class Floodplanet_Dataset(BaseDataset):
         self.preflood = preflood
         self.pre_post_difference = pre_post_difference
 
-        super(Floodplanet_Dataset, self).__init__(dset_name,
-                                               root_dir,
-                                               split,
-                                               slice_params,
-                                               eval_region=eval_region,
-                                               transforms=transforms,
-                                               sensor=sensor,
-                                               channels=channels,
-                                               seed_num=seed_num,
-                                               norm_mode=norm_mode,
-                                               ignore_index=ignore_index,
-                                               train_split_pct=train_split_pct)
+        super(Floodplanet_Dataset,
+              self).__init__(dset_name,
+                             root_dir,
+                             split,
+                             slice_params,
+                             eval_region=eval_region,
+                             transforms=transforms,
+                             sensor=sensor,
+                             channels=channels,
+                             seed_num=seed_num,
+                             norm_mode=norm_mode,
+                             ignore_index=ignore_index,
+                             train_split_pct=train_split_pct)
 
         self.n_classes = 3
         self.output_metadata = output_metadata
@@ -92,7 +93,7 @@ class Floodplanet_Dataset(BaseDataset):
             # # Get label path.
             label_path = os.path.join('/'.join(image_path.split('/')[:-3]),
                                       'labels', image_name + '.tif')
-                                      
+
             if os.path.exists(label_path) is False:
                 breakpoint()
                 pass
@@ -181,7 +182,9 @@ class Floodplanet_Dataset(BaseDataset):
                 # Check that validation region name is included in available regions.
                 for eval_region in self.eval_region:
                     if eval_region not in region_names:
-                        print(f'Eval region {eval_region} not found in avilable regions {region_names}')
+                        print(
+                            f'Eval region {eval_region} not found in avilable regions {region_names}'
+                        )
                         pass
 
                 # Get region directories of eval regions.
@@ -584,10 +587,10 @@ class Floodplanet_Dataset(BaseDataset):
         # Value mapping:
         # 0: No data (ignore)
         # 1: No flood
-        # 2: Flood      
+        # 2: Flood
         x, y = np.where((label == 2))
         binary_label[x, y] = 1
-    
+
         # Get ignore label.
         x, y = np.where((label == 0))
         binary_label[x, y] = self.ignore_index
@@ -620,12 +623,16 @@ class Floodplanet_Dataset(BaseDataset):
                                            crop_params.max_crop_height,
                                            crop_params.max_crop_width,
                                            constant_value=self.ignore_index)
-        
+
         # Apply transforms.
         if self.transforms is not None:
             active_transforms = self.sample_transforms()
-            image = self.apply_transforms(image, active_transforms, is_anno=False)
-            target = self.apply_transforms(target, active_transforms, is_anno=True)
+            image = self.apply_transforms(image,
+                                          active_transforms,
+                                          is_anno=False)
+            target = self.apply_transforms(target,
+                                           active_transforms,
+                                           is_anno=True)
         else:
             image = torch.tensor(image)
             target = torch.tensor(target)
@@ -654,30 +661,40 @@ class Floodplanet_Dataset(BaseDataset):
 def test_image_transforms(root_dir, slice_params, args):
     from omegaconf import OmegaConf
     no_t_dataset = Floodplanet_Dataset(root_dir,
-                               args.split,
-                               slice_params,
-                               sensor=args.sensor,
-                               channels=args.channels,
-                               eval_region=args.eval_region,
-                               dem=False,
-                               slope=False)
-    
-    conf = OmegaConf.create({'hflip': {'active': True, 'likelihood': 0}, 
-                            'vflip': {'active': True, 'likelihood': 0}, 
-                            'rotate': {'active': True,
-                                       'likelihood': 1,
-                                        'min_rot_angle': 0, 
-                                        'max_rot_angle': 360}})
+                                       args.split,
+                                       slice_params,
+                                       sensor=args.sensor,
+                                       channels=args.channels,
+                                       eval_region=args.eval_region,
+                                       dem=False,
+                                       slope=False)
+
+    conf = OmegaConf.create({
+        'hflip': {
+            'active': True,
+            'likelihood': 0
+        },
+        'vflip': {
+            'active': True,
+            'likelihood': 0
+        },
+        'rotate': {
+            'active': True,
+            'likelihood': 1,
+            'min_rot_angle': 0,
+            'max_rot_angle': 360
+        }
+    })
 
     t_dataset = Floodplanet_Dataset(root_dir,
-                               args.split,
-                               slice_params,
-                               sensor=args.sensor,
-                               channels=args.channels,
-                               eval_region=args.eval_region,
-                               transforms=conf,
-                               dem=False,
-                               slope=False)
+                                    args.split,
+                                    slice_params,
+                                    sensor=args.sensor,
+                                    channels=args.channels,
+                                    eval_region=args.eval_region,
+                                    transforms=conf,
+                                    dem=False,
+                                    slope=False)
 
     index = 0
     example = no_t_dataset.__getitem__(index)
@@ -696,8 +713,9 @@ def test_image_transforms(root_dir, slice_params, args):
     rgb_image = (rgb_image * 255).astype("uint8")
     rgb_overlay = (rgb_overlay * 255).astype("uint8")
 
-    create_gif([rgb_image, rgb_overlay],
-                f"./{dset_name}_test_trans_{no_t_dataset.sensor}_{index}_no_T.gif")
+    create_gif(
+        [rgb_image, rgb_overlay],
+        f"./{dset_name}_test_trans_{no_t_dataset.sensor}_{index}_no_T.gif")
 
     example = t_dataset.__getitem__(index)
 
@@ -716,5 +734,4 @@ def test_image_transforms(root_dir, slice_params, args):
     rgb_overlay = (rgb_overlay * 255).astype("uint8")
 
     create_gif([rgb_image, rgb_overlay],
-                f"./{dset_name}_test_trans_{t_dataset.sensor}_{index}_T.gif")
-
+               f"./{dset_name}_test_trans_{t_dataset.sensor}_{index}_T.gif")
